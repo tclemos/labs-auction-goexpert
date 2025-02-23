@@ -16,9 +16,9 @@ content-type: application/json
 
 {
     "user_id": "00000000-0000-0000-0000-000000000001",
-    "auction_id": "1f7391f4-aaef-450b-a007-082b66ceca67",
+    "auction_id": "0f508ee5-4b8f-492e-974a-7dfed88aaa64",
     "amount": 10
 }
 
 ### get auction
-GET http://localhost:8080/auction/1f7391f4-aaef-450b-a007-082b66ceca67 HTTP/1.1
+GET http://localhost:8080/auction/0f508ee5-4b8f-492e-974a-7dfed88aaa64 HTTP/1.1
