@@ -1,0 +1,24 @@
+### create auction
+
+POST http://localhost:8080/auction HTTP/1.1
+content-type: application/json
+
+{
+    "product_name": "Calhambeque",
+    "category": "Carros",
+    "description": "esta é uma descrição completa",
+    "condition": 1
+}
+
+### create bid
+POST http://localhost:8080/bid HTTP/1.1
+content-type: application/json
+
+{
+    "user_id": "00000000-0000-0000-0000-000000000001",
+    "auction_id": "1f7391f4-aaef-450b-a007-082b66ceca67",
+    "amount": 10
+}
+
+### get auction
+GET http://localhost:8080/auction/1f7391f4-aaef-450b-a007-082b66ceca67 HTTP/1.1

@@ -5,7 +5,9 @@ import (
 	"fullcycle-auction_go/configuration/logger"
 	"fullcycle-auction_go/internal/entity/auction_entity"
 	"fullcycle-auction_go/internal/internal_error"
+	"sync"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -19,12 +21,16 @@ type AuctionEntityMongo struct {
 	Timestamp   int64                           `bson:"timestamp"`
 }
 type AuctionRepository struct {
-	Collection *mongo.Collection
+	Collection            *mongo.Collection
+	AuctionStatusMap      map[string]auction_entity.AuctionStatus
+	AuctionStatusMapMutex *sync.Mutex
 }
 
 func NewAuctionRepository(database *mongo.Database) *AuctionRepository {
 	return &AuctionRepository{
-		Collection: database.Collection("auctions"),
+		Collection:            database.Collection("auctions"),
+		AuctionStatusMapMutex: &sync.Mutex{},
+		AuctionStatusMap:      make(map[string]auction_entity.AuctionStatus),
 	}
 }
 
@@ -45,6 +51,30 @@ func (ar *AuctionRepository) CreateAuction(
 		logger.Error("Error trying to insert auction", err)
 		return internal_error.NewInternalServerError("Error trying to insert auction")
 	}
+
+	return nil
+}
+
+func (ar *AuctionRepository) CloseAuction(
+	ctx context.Context,
+	auctionId string) *internal_error.InternalError {
+	ar.AuctionStatusMapMutex.Lock()
+	defer ar.AuctionStatusMapMutex.Unlock()
+	update := bson.M{
+		"$set": bson.M{
+			"status": auction_entity.Completed,
+		},
+	}
+	filter := bson.M{
+		"_id": auctionId,
+	}
+
+	if _, err := ar.Collection.UpdateOne(ctx, filter, update); err != nil {
+		logger.Error("Error trying to close auction", err)
+		return internal_error.NewInternalServerError("Error trying to close auction")
+	}
+
+	ar.AuctionStatusMap[auctionId] = auction_entity.Completed
 
 	return nil
 }
